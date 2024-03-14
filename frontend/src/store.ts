@@ -23,3 +23,5 @@ export const addDirsAtom = atom(null, (get, set, data: IDirsServerData) => {
     dirs.splice(index, 0, ...newData);
   });
 });
+
+export const fetchingAtom = atom(false);
