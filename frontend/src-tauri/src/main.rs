@@ -2,6 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::ffi::c_int;
+use std::fs::create_dir_all;
+use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread::sleep;
@@ -21,7 +23,7 @@ mod schema;
 mod utils;
 
 
-async fn producer(app: AppHandle, repo: String, root_path: String, stop_signal: Arc<AtomicBool>, tx: broadcast::Sender<(String, c_int)>) {
+async fn producer(app: AppHandle,store_path: String, repo: String, root_path: String, stop_signal: Arc<AtomicBool>, tx: broadcast::Sender<(String, c_int)>) {
     let mut paths = vec![root_path.clone()];
     let mut index = 0;
 
@@ -30,6 +32,8 @@ async fn producer(app: AppHandle, repo: String, root_path: String, stop_signal: 
             println!("stopped since interrupted");
             break;
         }
+
+        create_dir_all(Path::new(&store_path.clone()).join(path.clone().strip_prefix("/").unwrap())).unwrap();
 
         match utils::fetch_dir_list(repo.clone(), path.clone()).await {
             Ok(data) => {
@@ -98,7 +102,7 @@ async fn fetch_data_and_emit(
 
 
     tokio::spawn(async move {
-        producer(app.clone(), repo.clone(), root_path.clone(), stop_signal, tx).await;
+        producer(app.clone(), store_path.clone(), repo.clone(), root_path.clone(), stop_signal, tx).await;
     }).await.unwrap();
 
 
