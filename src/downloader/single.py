@@ -5,32 +5,13 @@ date: 2024-03-14
 
 import pathlib
 from pprint import pprint
-from typing import Union
 
-import pydantic as pydantic
 import requests as requests
 
-
-class DirBase(pydantic.BaseModel):
-    last_modified: str  # 2024-02-27T10:01:21+08:00
-    size: int  # folder=0
-    is_dir: bool  # file false, folder: true
+from src.schema import FileItem, FolderItem
 
 
-class FileItem(DirBase):
-    file_name: str
-    file_path: str
-
-
-class FolderItem(DirBase):
-    folder_name: str
-    folder_path: str
-
-
-Dir = Union[FileItem, FolderItem]
-
-
-def tsinghua_cloud_auto_download_all(
+def tsinghua_cloud_download_single(
     repo: str,
     store_path=pathlib.Path(__file__).parent.joinpath('downloaded').mkdir(exist_ok=True)
 ):
