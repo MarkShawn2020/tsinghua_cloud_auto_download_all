@@ -3,31 +3,49 @@
 import { Button } from "@/components/ui/button";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/tauri";
+import { File, Folder } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Input } from "../components/ui/input";
 
-type DirItem = {
+type DirItemBase = {
   size: number;
   last_modified: string;
-} & (
-  | {
-      is_dir: true;
-      folder_path: string;
-      folder_name: string;
-    }
-  | {
-      is_dir: false;
-      file_name: string;
-      file_path: string;
-    }
-);
-
-type ListDirResult = {
-  dirent_list?: DirItem[];
+  is_dir: boolean;
 };
 
+interface FolderDirItem extends DirItemBase {
+  is_dir: true;
+  folder_path: string;
+  folder_name: string;
+}
+
+interface FileDirItem extends DirItemBase {
+  is_dir: false;
+  file_name: string;
+  file_path: string;
+}
+
+type DirItemFromServer = FolderDirItem | FileDirItem;
+
+type ListDirResult = {
+  dirent_list?: DirItemFromServer[];
+};
+
+interface DirItemClient extends DirItemBase {
+  name: string;
+  path: string;
+}
+
+const dirItemServer2Client = (dir: DirItemFromServer): DirItemClient => ({
+  is_dir: dir.is_dir,
+  last_modified: dir.last_modified,
+  size: dir.size,
+  name: dir.is_dir ? dir.folder_name : dir.file_name,
+  path: dir.is_dir ? dir.folder_path : dir.file_path,
+});
+
 export default function Home() {
-  const [dirs, setDirs] = useState<DirItem[]>([]);
+  const [dirs, setDirs] = useState<DirItemClient[]>([]);
 
   useEffect(() => {
     const unListen = listen<{ data: string }>("list_data", (event) => {
@@ -35,7 +53,7 @@ export default function Home() {
 
       const data = JSON.parse(event.payload.data) as ListDirResult;
       console.log("Data parsed: ", data);
-      if (data.dirent_list) setDirs(data.dirent_list);
+      if (data.dirent_list) setDirs(data.dirent_list.map(dirItemServer2Client));
     });
 
     return () => {
@@ -83,17 +101,23 @@ const InputLine = () => {
   );
 };
 
-const DirLists = ({ dirs }: { dirs: DirItem[] }) => {
+const DirLists = ({ dirs }: { dirs: DirItemClient[] }) => {
   return (
     <div className={"flex flex-col gap-2"}>
       <div>条目列表</div>
 
       {dirs.map((dir, index) => (
-        <div key={index}>
-          <span>isDir: {dir.is_dir ? "TRUE" : "FALSE"}</span>
-          <span> {dir.is_dir ? dir.folder_path : dir.file_path}</span>
-        </div>
+        <DirItem dir={dir} key={index} />
       ))}
+    </div>
+  );
+};
+
+const DirItem = ({ dir }: { dir: DirItemClient }) => {
+  return (
+    <div className={"flex items-center gap-2 text-primary/75"}>
+      {dir.is_dir ? <Folder /> : <File />}
+      <span> {dir.name}</span>
     </div>
   );
 };
