@@ -1,10 +1,19 @@
-import json
+import re
 from pathlib import Path
 
 import requests
 from loguru import logger
 
-from src.schema import FolderItem, FileItem
+from src.schema import FolderItem, FileItem, IRepo
+
+
+def parse_share_link(s: str) -> IRepo:
+    assert isinstance(s, str), "非法输入"
+    m = re.match('https://cloud.tsinghua.edu.cn/d/(?P<repo>.*)/\?p=(?P<folder_path>.*)&mode=list', s.strip())
+    assert m is not None, "输入网址不匹配"
+    repo = IRepo.parse_obj(m.groupdict())
+    logger.info(repo)
+    return repo
 
 
 def list_files_from_tsinghua_cloud(store_path: Path, repo: str, folder_path: str):

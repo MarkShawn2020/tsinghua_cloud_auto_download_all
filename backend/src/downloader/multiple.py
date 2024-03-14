@@ -4,7 +4,7 @@ from multiprocessing import Queue, Process
 
 from loguru import logger
 
-from src.core import download_file_from_tsinghua_cloud, list_files_from_tsinghua_cloud
+from src.core import download_file_from_tsinghua_cloud, list_files_from_tsinghua_cloud, parse_share_link
 from src.schema import DONE
 
 
@@ -14,15 +14,18 @@ class TsinghuaCloudDownloader:
     _folder_path: str
     _q: Queue
     
-    def __init__(self,
-                 store_path: pathlib.Path,
-                 repo: str,
-                 folder_path='/',
-                 ):
-        self._repo = repo
-        self._store_path = store_path
-        self._folder_path = folder_path
+    def __init__(self):
         self._q = Queue()
+    
+    def parse_share_link(self, s: str):
+        result = parse_share_link(s)
+        self._repo = result.repo
+        self._folder_path = result.folder_path
+    
+    def init_store_path(self, store_path: pathlib.Path):
+        assert store_path.exists(), "路径不存在"
+        assert store_path.is_dir(), "路径不是文件夹"
+        self._store_path = store_path
     
     def start(self):
         put_process = Process(target=self._put_process, args=())
