@@ -31,21 +31,23 @@ struct DirItem {
     folder_path: Option<String>,
 }
 
+type DirList = Vec<DirItem>;
+
 #[derive(Serialize, Deserialize)]
 struct ListData {
-    dirent_list: Vec<DirItem>,
+    dirent_list: DirList,
 }
 
 type TheError = Box<dyn std::error::Error + Send + Sync>;
 
-async fn fetch_data(path: &str) -> Result<ListData, TheError> {
+async fn fetch_data(path: &str) -> Result<DirList, TheError> {
     println!("fetching data...");
     let response = reqwest::get(format!("https://cloud.tsinghua.edu.cn/api/v2.1/share-links/689824200edb49888695/dirents?path={}", path))
         .await?
         .text()
         .await?;
 
-    let p: ListData = from_str::<ListData>(&response)?;
+    let p: DirList = from_str::<ListData>(&response)?.dirent_list;
 
     Ok(p)
 }
@@ -57,9 +59,9 @@ async fn recursive_fetch_and_emit(app: &AppHandle, root_path: &str) {
         match fetch_data(&path).await {
             Ok(data) => {
                 // println!("emitting: {}", data);
-                let _ = app.emit_all("list_data", json!({"data": data}));
+                let _ = app.emit_all("list_data", json!({"children": data, "parent": path}));
 
-                for item in &data.dirent_list {
+                for item in &data {
                     if let Some(fp) = &item.folder_path {
                         paths.push(fp.clone());
                     }

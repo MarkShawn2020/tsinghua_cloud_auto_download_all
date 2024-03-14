@@ -1,22 +1,20 @@
 "use client";
 
+import { addDirsAtom } from "@/store";
 import { listen } from "@tauri-apps/api/event";
-import React, { useEffect, useState } from "react";
+import { useAtom } from "jotai";
+import React, { useEffect } from "react";
 import { DirLists } from "../components/dirs";
 import { InputLine } from "../components/input";
-import { DirItemClient, ListDirResult } from "../schema";
-import { dirItemServer2Client } from "../utils";
+import { IDirsServerData } from "../schema";
 
 export default function Home() {
-  const [dirs, setDirs] = useState<DirItemClient[]>([]);
+  const [, addDirs] = useAtom(addDirsAtom);
 
   useEffect(() => {
-    const unListen = listen<{ data: ListDirResult }>("list_data", (event) => {
+    const unListen = listen<IDirsServerData>("list_data", (event) => {
       console.log("Data from Rust: ", event.payload);
-
-      const data = event.payload.data;
-      console.log("Data parsed: ", data);
-      if (data.dirent_list) setDirs(data.dirent_list.map(dirItemServer2Client));
+      addDirs(event.payload);
     });
 
     return () => {
@@ -31,7 +29,7 @@ export default function Home() {
 
         <InputLine />
 
-        <DirLists dirs={dirs} />
+        <DirLists />
       </div>
     </main>
   );

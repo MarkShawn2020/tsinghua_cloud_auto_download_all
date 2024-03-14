@@ -17,11 +17,11 @@ export interface FileDirItem extends DirItemBase {
 }
 
 export type DirItemFromServer = FolderDirItem | FileDirItem;
-export type ListDirResult = {
-  dirent_list?: DirItemFromServer[];
-};
 
 export interface DirItemClient extends DirItemBase {
   name: string;
   path: string;
+  level: number;
 }
+
+export type IDirsServerData = { children: DirItemFromServer[]; parent: string };
