@@ -1,6 +1,12 @@
 import { atom } from "jotai";
 import { atomWithImmer } from "jotai-immer";
+import { atomWithStorage } from "jotai/utils";
 import { DirItemClient, IDirsServerData } from "./schema";
+
+export const rootDirAtom = atomWithStorage<string | null>(
+  "root.dir.path",
+  null,
+);
 
 export const dirsAtom = atomWithImmer<DirItemClient[]>([]);
 
