@@ -24,4 +24,11 @@ export interface DirItemClient extends DirItemBase {
   level: number;
 }
 
-export type IDirsServerData = { children: DirItemFromServer[]; parent: string };
+export type IServerData =
+  | { type: "list-dirs"; children: DirItemFromServer[]; parent: string }
+  | {
+      type: "file-mutation";
+      filePath: string;
+      status: "downloading" | "downloaded" | "failed";
+      progress?: number;
+    };

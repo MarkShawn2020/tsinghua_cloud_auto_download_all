@@ -1,13 +1,13 @@
 import { atom } from "jotai";
 import { atomWithImmer } from "jotai-immer";
 import { atomWithStorage } from "jotai/utils";
-import { DirItemClient, IDirsServerData } from "./schema";
+import { DirItemClient, IServerData } from "./schema";
 
 export const storePathAtom = atomWithStorage<string | null>("store.path", null);
 
 export const dirsAtom = atomWithImmer<DirItemClient[]>([]);
 
-export const addDirsAtom = atom(null, (get, set, data: IDirsServerData) => {
+export const addDirsAtom = atom(null, (get, set, data: IServerData) => {
   const { children, parent } = data;
 
   set(dirsAtom, (dirs) => {

@@ -3,7 +3,6 @@
 import { addDirsAtom, fetchingAtom, storePathAtom } from "@/store";
 import { open } from "@tauri-apps/api/dialog";
 import { listen } from "@tauri-apps/api/event";
-import { appDir } from "@tauri-apps/api/path";
 import { useAtom } from "jotai";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
@@ -11,7 +10,7 @@ import { DirLists } from "../components/dirs";
 import { InputLine } from "../components/input";
 import { Button } from "../components/ui/button";
 import { Label } from "../components/ui/label";
-import { IDirsServerData } from "../schema";
+import { IServerData } from "../schema";
 
 export default function Home() {
   const [, addDirs] = useAtom(addDirsAtom);
@@ -19,11 +18,21 @@ export default function Home() {
   const [rootDir, setRootDir] = useAtom(storePathAtom);
 
   useEffect(() => {
-    const unListen = listen<IDirsServerData>("list_data", (event) => {
+    const unListen = listen<IServerData>("core", (event) => {
       console.log("Data from Rust: ", event.payload);
-
       if (!fetching) return;
-      addDirs(event.payload);
+
+      switch (event.payload.type) {
+        case "list-dirs":
+          addDirs(event.payload);
+          break;
+
+        case "file-mutation":
+          break;
+
+        default:
+          throw new Error("unexpected");
+      }
     });
 
     return () => {
@@ -53,7 +62,6 @@ export default function Home() {
               const selected = await open({
                 directory: true,
                 multiple: false,
-                defaultPath: await appDir(),
                 title: "默认存储位置",
               });
 
