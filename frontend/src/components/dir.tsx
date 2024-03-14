@@ -7,7 +7,7 @@ export const DirItem = ({ dir }: { dir: DirItemClient }) => {
     <div
       className={"flex items-center gap-2 text-primary/75"}
       style={{
-        marginLeft: `${dir.level * 2}rem`,
+        marginLeft: `${dir.level * 16}px`,
       }}
     >
       {dir.is_dir ? <Folder /> : <File />}
