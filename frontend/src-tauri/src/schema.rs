@@ -17,5 +17,3 @@ pub type DirList = Vec<DirItem>;
 pub struct ListData {
     pub(crate) dirent_list: DirList,
 }
-
-pub type TheError = Box<dyn std::error::Error + Send + Sync>;

@@ -43,14 +43,14 @@ async fn fetch_data_and_emit(
         tokio::spawn(async move {
             while let Ok((path, index)) = rx.recv().await {
                 if index % n == i {
-                    utils::consumer(store_path.clone(), repo.clone(), path).await;
+                    utils::consumer(store_path.clone(), repo.clone(), path).await.unwrap();
                 }
             }
         });
     }
 
     tokio::spawn(async move {
-        utils::producer(app.clone(), store_path.clone(), repo.clone(), root_path.clone(), stop_signal, tx).await;
+        utils::producer(app.clone(), store_path.clone(), repo.clone(), root_path.clone(), stop_signal, tx).await.unwrap();
     }).await.unwrap();
 
     Ok(())
