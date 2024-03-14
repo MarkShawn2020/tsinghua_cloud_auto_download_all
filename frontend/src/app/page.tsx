@@ -1,6 +1,7 @@
 "use client";
 
-import { addDirsAtom, fetchingAtom, rootDirAtom } from "@/store";
+import { addDirsAtom, fetchingAtom, storePathAtom } from "@/store";
+import { open } from "@tauri-apps/api/dialog";
 import { listen } from "@tauri-apps/api/event";
 import { appDir } from "@tauri-apps/api/path";
 import { useAtom } from "jotai";
@@ -11,12 +12,11 @@ import { InputLine } from "../components/input";
 import { Button } from "../components/ui/button";
 import { Label } from "../components/ui/label";
 import { IDirsServerData } from "../schema";
-import { open, save } from "@tauri-apps/api/dialog";
 
 export default function Home() {
   const [, addDirs] = useAtom(addDirsAtom);
   const [fetching] = useAtom(fetchingAtom);
-  const [rootDir, setRootDir] = useAtom(rootDirAtom);
+  const [rootDir, setRootDir] = useAtom(storePathAtom);
 
   useEffect(() => {
     const unListen = listen<IDirsServerData>("list_data", (event) => {

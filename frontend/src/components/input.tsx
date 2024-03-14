@@ -1,13 +1,14 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { useAtom } from "jotai";
 import React, { useEffect, useState } from "react";
-import { fetchingAtom } from "../store";
+import { fetchingAtom, storePathAtom } from "../store";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
 export const InputLine = () => {
   const [input, setInput] = useState("");
   const [fetching, setFetching] = useAtom(fetchingAtom);
+  const [storePath] = useAtom(storePathAtom);
 
   const stopFetching = async () => {
     setFetching(false);
@@ -39,7 +40,13 @@ export const InputLine = () => {
         onClick={async () => {
           if (!fetching) {
             setFetching(true);
-            await invoke<string>("fetch_data_and_emit", { path: "/" });
+            const args = {
+              path: "/",
+              storePath,
+            };
+            console.log("fetching: ", args);
+
+            await invoke<string>("fetch_data_and_emit", args);
           } else void stopFetching();
         }}
       >

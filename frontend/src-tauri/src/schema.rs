@@ -5,7 +5,7 @@ pub struct DirItem {
     size: u128,
     is_dir: bool,
     last_modified: String,
-    file_path: Option<String>,
+    pub(crate) file_path: Option<String>,
     file_name: Option<String>,
     folder_name: Option<String>,
     pub(crate) folder_path: Option<String>,
