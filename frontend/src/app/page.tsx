@@ -48,10 +48,10 @@ export default function Home() {
   const [dirs, setDirs] = useState<DirItemClient[]>([]);
 
   useEffect(() => {
-    const unListen = listen<{ data: string }>("list_data", (event) => {
+    const unListen = listen<{ data: ListDirResult }>("list_data", (event) => {
       console.log("Data from Rust: ", event.payload);
 
-      const data = JSON.parse(event.payload.data) as ListDirResult;
+      const data = event.payload.data;
       console.log("Data parsed: ", data);
       if (data.dirent_list) setDirs(data.dirent_list.map(dirItemServer2Client));
     });
@@ -78,7 +78,7 @@ const InputLine = () => {
   const [input, setInput] = useState("");
 
   const trigger = async () => {
-    await invoke<string>("fetch_data_and_emit");
+    await invoke<string>("fetch_data_and_emit", { path: "/" });
   };
 
   return (
