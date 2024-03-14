@@ -26,9 +26,13 @@ export default function Home() {
   }, [fetching]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className={"flex flex-col gap-4 items-center w-full max-w-[720px]"}>
-        <div className={"text-2xl"}>清华云下载器</div>
+    <main className="flex h-screen flex-col items-center justify-between p-24">
+      <div
+        className={
+          "flex flex-col gap-4 items-center w-full max-w-[720px] h-full"
+        }
+      >
+        <div className={"text-2xl shrink-0"}>清华云下载器</div>
 
         <InputLine />
 

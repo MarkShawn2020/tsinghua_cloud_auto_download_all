@@ -1,18 +1,27 @@
 import { useAtomValue } from "jotai";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { dirsAtom } from "../store";
 import { DirItem } from "./dir";
 
 export const DirLists = () => {
   const dirs = useAtomValue(dirsAtom);
 
-  return (
-    <div className={"w-full flex flex-col gap-2"}>
-      <div>条目列表</div>
+  const refBottom = useRef<HTMLDivElement>(null);
 
-      {dirs.map((dir, index) => (
-        <DirItem dir={dir} key={index} />
-      ))}
+  useEffect(() => {
+    refBottom.current?.scrollIntoView({ behavior: "auto" });
+  }, [dirs.length]);
+
+  return (
+    <div className={"w-full grow overflow-hidden flex flex-col gap-2"}>
+      <div className={"shrink-0"}>条目列表</div>
+
+      <div className={"bg-muted/50 overflow-auto grow p-2 rounded-xl"}>
+        {dirs.map((dir, index) => (
+          <DirItem dir={dir} key={index} />
+        ))}
+        <div ref={refBottom} />
+      </div>
     </div>
   );
 };

@@ -24,7 +24,7 @@ export const InputLine = () => {
   }, []);
 
   return (
-    <div className={"flex items-center gap-4"}>
+    <div className={"flex items-center gap-4 shrink-0"}>
       <Input
         value={input}
         onChange={(event) => {
