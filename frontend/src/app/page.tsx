@@ -26,7 +26,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className={"flex flex-col gap-4 items-center"}>
+      <div className={"flex flex-col gap-4 items-center w-full max-w-[720px]"}>
         <div className={"text-2xl"}>清华云下载器</div>
 
         <InputLine />
