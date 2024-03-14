@@ -1,12 +1,10 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::ffi::c_int;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use tauri::{AppHandle, command, Manager, State};
-use tokio::sync::broadcast;
 
 mod schema;
 mod utils;
@@ -32,25 +30,20 @@ async fn fetch_data_and_emit(
     let stop_signal = Arc::clone(&stop_signal);
     stop_signal.store(false, Ordering::SeqCst);
 
-    let (tx, _): (broadcast::Sender<(String, c_int)>, broadcast::Receiver<(String, c_int)>) = broadcast::channel(120);
+    let (s, r) = async_channel::bounded(4);
 
-    let n = 5;
-    for i in 0..n {
-        let mut rx = tx.subscribe();
-        let repo = repo.clone();
-        let store_path = store_path.clone();
-
-        tokio::spawn(async move {
-            while let Ok((path, index)) = rx.recv().await {
-                if index % n == i {
-                    utils::consumer(store_path.clone(), repo.clone(), path).await.unwrap();
-                }
-            }
-        });
-    }
+    let app_cloned = app.clone();
+    let store_path_cloned = store_path.clone();
+    let repo_cloned = repo.clone();
 
     tokio::spawn(async move {
-        utils::producer(app.clone(), store_path.clone(), repo.clone(), root_path.clone(), stop_signal, tx).await.unwrap();
+        while let Ok(path) = r.recv().await {
+            utils::consumer(app_cloned.clone(), store_path_cloned.clone(), repo_cloned.clone(), path).await.unwrap();
+        }
+    });
+
+    tokio::spawn(async move {
+        utils::producer(app.clone(), store_path.clone(), repo.clone(), root_path.clone(), stop_signal, s).await.expect("waiting...");
     }).await.unwrap();
 
     Ok(())

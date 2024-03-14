@@ -15,5 +15,5 @@ pub type DirList = Vec<DirItem>;
 
 #[derive(Serialize, Deserialize)]
 pub struct ListData {
-    pub(crate) dirent_list: DirList,
+    pub(crate) dirent_list: Option<DirList>,
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { addDirsAtom, fetchingAtom, storePathAtom } from "@/store";
+import { fetchingAtom, storePathAtom, updateDirsAtom } from "@/store";
 import { open } from "@tauri-apps/api/dialog";
 import { listen } from "@tauri-apps/api/event";
 import { useAtom } from "jotai";
@@ -13,26 +13,18 @@ import { Label } from "../components/ui/label";
 import { IServerData } from "../schema";
 
 export default function Home() {
-  const [, addDirs] = useAtom(addDirsAtom);
+  const [, updateDirs] = useAtom(updateDirsAtom);
   const [fetching] = useAtom(fetchingAtom);
   const [rootDir, setRootDir] = useAtom(storePathAtom);
 
   useEffect(() => {
     const unListen = listen<IServerData>("core", (event) => {
-      console.log("Data from Rust: ", event.payload);
+      // DONT log, o.w. blocked...
+      // console.log("Data from Rust: ", event.payload);
+
       if (!fetching) return;
 
-      switch (event.payload.type) {
-        case "list-dirs":
-          addDirs(event.payload);
-          break;
-
-        case "file-mutation":
-          break;
-
-        default:
-          throw new Error("unexpected");
-      }
+      updateDirs(event.payload);
     });
 
     return () => {

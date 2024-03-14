@@ -18,10 +18,20 @@ export interface FileDirItem extends DirItemBase {
 
 export type DirItemFromServer = FolderDirItem | FileDirItem;
 
+export type FileStatus =
+  | "waiting"
+  | "preparing"
+  | "downloading"
+  | "downloaded"
+  | "failed";
+
 export interface DirItemClient extends DirItemBase {
   name: string;
   path: string;
   level: number;
+
+  status?: FileStatus;
+  downloaded?: number;
 }
 
 export type IServerData =
@@ -29,6 +39,6 @@ export type IServerData =
   | {
       type: "file-mutation";
       filePath: string;
-      status: "downloading" | "downloaded" | "failed";
-      progress?: number;
+      status: FileStatus;
+      downloaded?: number;
     };
