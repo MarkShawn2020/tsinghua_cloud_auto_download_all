@@ -41,7 +41,8 @@ export const InputLine = () => {
           if (!fetching) {
             setFetching(true);
             const args = {
-              path: "/",
+              repo: "689824200edb49888695",
+              rootPath: "/",
               storePath,
             };
             console.log("fetching: ", args);

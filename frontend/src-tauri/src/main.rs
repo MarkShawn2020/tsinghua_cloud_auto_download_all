@@ -1,21 +1,82 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::thread::sleep;
+use std::time::Duration;
 
+use serde_json::{from_str, json};
 use tauri::{AppHandle, command, Manager, State};
+
+use utils::download_file;
+
+use crate::schema::{DirList, ListData, TheError};
 
 mod schema;
 mod utils;
 
 
+/***
+todo: static
+ */
 #[command]
-async fn fetch_data_and_emit(app: AppHandle, store_path: Box<Path>, path: String, stop_signal: State<'_, Arc<AtomicBool>>) -> Result<(), String> {
+async fn fetch_data_and_emit(
+    app: AppHandle,
+    store_path: String,
+    repo: String,
+    root_path: String,
+    stop_signal: State<'_, Arc<AtomicBool>>,
+) -> Result<(), String> {
     println!("fetching data and emit...");
+
+    let stop_signal = Arc::clone(&stop_signal);
     stop_signal.store(false, Ordering::SeqCst);
-    utils::recursive_fetch_and_emit(&app, &store_path, &path, stop_signal).await;
+
+    let (tx, mut rx) = tokio::sync::mpsc::channel(120);
+
+    let mut paths = vec![root_path.clone()];
+
+    let repo_clone = repo.clone();
+
+    tokio::spawn(async move {
+        while let Some(path) = paths.pop() {
+            if (stop_signal.load(Ordering::SeqCst)) {
+                println!("stopped since interrupted");
+                break;
+            }
+
+            match utils::fetch_dir_list(repo.clone(), path.clone()).await {
+                Ok(data) => {
+                    // println!("emitting: {}", data);
+                    let _ = app.emit_all("list_data", json!({"children": &data, "parent": &path}));
+
+                    for item in &data {
+                        if let Some(fp) = &item.folder_path {
+                            paths.push(fp.clone());
+                        } else if let Some(fp) = &item.file_path {
+                            tx.send(fp.clone()).await.expect("TODO: panic message");
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error fetching data: {}", e)
+                }
+            }
+
+            tokio::time::sleep(Duration::from_millis(100)).await;
+        }
+
+        tx.send("DONE".parse().unwrap()).await.unwrap();
+    });
+
+    while let Some(path) = rx.recv().await {
+        if path == "DONE" {
+            break;
+        }
+        download_file(store_path.clone(), repo_clone.clone(), path.clone()).await.expect("TODO: panic message");
+    }
+
     Ok(())
 }
 
@@ -29,17 +90,12 @@ async fn stop_fetching(stop_signal: State<'_, Arc<AtomicBool>>) -> Result<(), St
 fn main() {
     let stop_signal = Arc::new(AtomicBool::new(false));
 
-    tauri::Builder::default()
-        .setup(|app| {
-            #[cfg(debug_assertions)]
-            {
-                let window = app.get_window("main").unwrap();
-                window.open_devtools();
-            }
-            Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![fetch_data_and_emit, stop_fetching])
-        .manage(stop_signal)
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+    tauri::Builder::default().setup(|app| {
+        #[cfg(debug_assertions)]
+        {
+            let window = app.get_window("main").unwrap();
+            window.open_devtools();
+        }
+        Ok(())
+    }).invoke_handler(tauri::generate_handler![fetch_data_and_emit, stop_fetching]).manage(stop_signal).run(tauri::generate_context!()).expect("error while running tauri application");
 }
