@@ -24,6 +24,7 @@ def list_files_from_tsinghua_cloud(store_path: Path, repo: str, folder_path: str
     :param folder_path:
     :return:
     """
+    # url = f'https://cloud.tsinghua.edu.cn/api/v2.1/share-links/689824200edb49888695/dirents?path=/'
     url = f'https://cloud.tsinghua.edu.cn/api/v2.1/share-links/{repo}/dirents?path={folder_path}'
     res = requests.get(url)
     local_dir = store_path.joinpath(folder_path.strip('/'))  # strip o.w. root

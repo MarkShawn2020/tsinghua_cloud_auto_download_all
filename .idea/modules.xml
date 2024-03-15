@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/cloud.tsinghua.edu.cn.iml" filepath="$PROJECT_DIR$/.idea/cloud.tsinghua.edu.cn.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/tsinghua_cloud_downloader.iml" filepath="$PROJECT_DIR$/.idea/tsinghua_cloud_downloader.iml" />
     </modules>
   </component>
 </project>
