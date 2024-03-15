@@ -1,9 +1,12 @@
 import { atom } from "jotai";
 import { atomWithImmer } from "jotai-immer";
 import { atomWithStorage } from "jotai/utils";
+import { number } from "prop-types";
 import { DirItemClient, IServerData } from "./schema";
 
 export const storePathAtom = atomWithStorage<string | null>("store.path", null);
+
+export const threadsCountAtom = atomWithStorage<number>("threads.count", 4);
 
 export const foldersVisibleAtom = atomWithStorage("folders.visible", false);
 

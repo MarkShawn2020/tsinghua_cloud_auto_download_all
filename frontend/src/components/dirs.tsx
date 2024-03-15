@@ -1,9 +1,10 @@
+import { filesize } from "filesize";
 import { useAtom, useAtomValue } from "jotai";
+import { sum } from "lodash";
 import React, { useEffect, useRef } from "react";
 import { dirsAtom, foldersVisibleAtom } from "../store";
 import { DirItem } from "./dir";
-import { sum } from "lodash";
-import { filesize } from "filesize";
+import { Label } from "./ui/label";
 
 export const DirLists = () => {
   const dirs = useAtomValue(dirsAtom);
@@ -20,13 +21,16 @@ export const DirLists = () => {
   const nFolders = dirs.length - nFiles;
   const totalSize = sum(files.map((d) => d.size));
   const downloadedSize = sum(files.map((d) => d.downloaded));
+  const percentage = ((downloadedSize / totalSize || 0) * 100).toFixed(2);
 
   return (
     <div className={"w-full grow overflow-hidden flex flex-col gap-2"}>
-      <div className={"shrink-0"}>
-        条目列表（{nFolders}文件夹 / {nFiles}文件 / 已下载：
+      <Label className={"text-lg"}>条目列表</Label>
+
+      <div className={"shrink-0 text-xs text-muted-foreground"}>
+        {nFolders}文件夹 / {nFiles}文件 / 已下载：
         {filesize(downloadedSize)} / 总体积：{filesize(totalSize)} / 完成度：
-        {((downloadedSize / totalSize) * 100).toFixed(2)}%）
+        {percentage}%
       </div>
 
       <div className={"bg-muted/50 overflow-auto grow p-2 rounded-xl"}>

@@ -15,7 +15,7 @@ todo: static
 ref:
 - https://chat.openai.com/c/cfa0aba4-16c4-4aea-9e6f-4bba0e56a507
 - https://chat.openai.com/c/d428f113-52d1-408d-9986-52abc20ab04a
-
+- https://chat.openai.com/c/5276396d-da34-49fa-9789-a22e16979c50
  */
 #[command]
 async fn fetch_data_and_emit(
@@ -23,6 +23,7 @@ async fn fetch_data_and_emit(
     store_path: String,
     repo: String,
     root_path: String,
+    n: usize,
     stop_signal: State<'_, Arc<AtomicBool>>,
 ) -> Result<(), String> {
     println!("fetching data and emit...");
@@ -30,17 +31,20 @@ async fn fetch_data_and_emit(
     let stop_signal = Arc::clone(&stop_signal);
     stop_signal.store(false, Ordering::SeqCst);
 
-    let (s, r) = async_channel::bounded(4);
+    let (s, r) = async_channel::bounded(n);
 
-    let app_cloned = app.clone();
-    let store_path_cloned = store_path.clone();
-    let repo_cloned = repo.clone();
+    for _ in 0..n {
+        let app_cloned = app.clone();
+        let store_path_cloned = store_path.clone();
+        let repo_cloned = repo.clone();
+        let r = r.clone();
 
-    tokio::spawn(async move {
-        while let Ok(path) = r.recv().await {
-            utils::consumer(app_cloned.clone(), store_path_cloned.clone(), repo_cloned.clone(), path).await.unwrap();
-        }
-    });
+        tokio::spawn(async move {
+            while let Ok(path) = r.recv().await {
+                utils::consumer(app_cloned.clone(), store_path_cloned.clone(), repo_cloned.clone(), path).await.unwrap();
+            }
+        });
+    }
 
     tokio::spawn(async move {
         utils::producer(app.clone(), store_path.clone(), repo.clone(), root_path.clone(), stop_signal, s).await.expect("waiting...");

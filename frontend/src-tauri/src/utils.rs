@@ -1,4 +1,3 @@
-use std::ffi::c_int;
 use std::fs::create_dir_all;
 use std::path::Path;
 use std::sync::Arc;
@@ -6,11 +5,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use futures::stream::StreamExt;
-use reqwest::header::DATE;
 use serde_json::{from_str, json};
 use tauri::{AppHandle, Manager};
 use tokio::io::AsyncWriteExt;
-use tokio::sync::broadcast;
 
 use crate::schema::ListData;
 
@@ -23,7 +20,6 @@ pub async fn producer(
     s: async_channel::Sender<String>)
     -> Result<(), Box<dyn std::error::Error>> {
     let mut paths = vec![root_path.clone()];
-    let mut index = 0;
 
     while let Some(path) = paths.pop() {
         if stop_signal.load(Ordering::SeqCst) {
@@ -47,7 +43,6 @@ pub async fn producer(
                     paths.push(fp.clone());
                 } else if let Some(fp) = &item.file_path {
                     s.send(fp.clone()).await.expect("TODO: panic message");
-                    index += 1;
                 }
             }
         }
@@ -74,7 +69,7 @@ pub async fn consumer(app: AppHandle, store_path: String, repo: String, path: St
     if !resp.status().is_success() {
         app.emit_all("core", json!({"type": "file-mutation", "filePath": path, "status": "failed", "downloaded": downloaded})).unwrap();
     } else {
-        let total_size = resp.content_length().unwrap_or(0);
+        // let total_size = resp.content_length().unwrap_or(0);
 
         let local_path = Path::new(&store_path).join(path.clone().strip_prefix("/").unwrap());
 

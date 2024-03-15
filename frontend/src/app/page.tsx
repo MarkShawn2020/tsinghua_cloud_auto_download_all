@@ -1,21 +1,16 @@
 "use client";
 
-import { fetchingAtom, storePathAtom, updateDirsAtom } from "@/store";
-import { open } from "@tauri-apps/api/dialog";
+import { fetchingAtom, updateDirsAtom } from "@/store";
 import { listen } from "@tauri-apps/api/event";
 import { useAtom } from "jotai";
 import React, { useEffect } from "react";
-import { toast } from "sonner";
 import { DirLists } from "../components/dirs";
 import { InputLine } from "../components/input";
-import { Button } from "../components/ui/button";
-import { Label } from "../components/ui/label";
 import { IServerData } from "../schema";
 
 export default function Home() {
   const [, updateDirs] = useAtom(updateDirsAtom);
   const [fetching] = useAtom(fetchingAtom);
-  const [rootDir, setRootDir] = useAtom(storePathAtom);
 
   useEffect(() => {
     const unListen = listen<IServerData>("core", (event) => {
@@ -39,34 +34,9 @@ export default function Home() {
           "flex flex-col gap-4 items-center w-full max-w-[720px] h-full"
         }
       >
-        <div className={"text-2xl shrink-0"}>清华云下载器</div>
+        <div className={"text-2xl font-bold my-8 shrink-0"}>清华云下载器</div>
 
         <InputLine />
-
-        <div className={"flex items-center gap-2 w-full"}>
-          <Label className={"grow"}>{rootDir === null ? "空" : rootDir}</Label>
-
-          <Button
-            variant={"secondary"}
-            className={"px-8"}
-            size={"sm"}
-            onClick={async () => {
-              const selected = await open({
-                directory: true,
-                multiple: false,
-                title: "默认存储位置",
-              });
-
-              if (Array.isArray(selected))
-                return toast.error("不支持多个文件夹");
-              else if (selected === null) return;
-
-              setRootDir(selected);
-            }}
-          >
-            存储地址
-          </Button>
-        </div>
 
         <DirLists />
       </div>
