@@ -9,7 +9,7 @@
     "lint": "next lint",
     "tauri": "tauri",
     "build-mac": "tauri build --target universal-apple-darwin",
-    "build-win": "tauri build --target i686-pc-windows-msvc"
+    "build-win": "tauri build --target x86_64-pc-windows-gnu"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.5",

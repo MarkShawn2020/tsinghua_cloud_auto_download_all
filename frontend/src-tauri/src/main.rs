@@ -13,6 +13,8 @@ mod utils;
 todo: static
 
 ref:
+- 消息传递 - Rust语言圣经(Rust Course), https://course.rs/advance-practice/channels.html
+- async_channel - Rust, https://docs.rs/async-channel/latest/async_channel/index.html
 - https://chat.openai.com/c/cfa0aba4-16c4-4aea-9e6f-4bba0e56a507
 - https://chat.openai.com/c/d428f113-52d1-408d-9986-52abc20ab04a
 - https://chat.openai.com/c/5276396d-da34-49fa-9789-a22e16979c50
